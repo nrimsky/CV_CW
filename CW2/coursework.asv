@@ -19,7 +19,7 @@ for i = 1:size(all_files)
             ax = subplot(2,3, j, "Parent", fig);
             [m, n] = size(F1pdc);
             plot(ax, 1:n, F1pdc(1,:));
-            title(ax, "Pressure "+ strrep(material, "_", " "));
+            title(ax, "Pressure "+ material);
             hold(ax, "on");
         end
     end
@@ -37,7 +37,7 @@ for i = 1:size(all_files)
             ax = subplot(2,3, j, "Parent", fig);
             [m, n] = size(F1tac);
             plot(ax, 1:n, F1tac(1,:));
-            title(ax, "Vibration "+ strrep(material, "_", " "));
+            title(ax, "Vibra "+ material);
             hold(ax, "on");
         end
     end
@@ -55,7 +55,7 @@ for i = 1:size(all_files)
             ax = subplot(2,3, j, "Parent", fig);
             [m, n] = size(F1tdc);
             plot(ax, 1:n, F1tdc(1,:));
-            title(ax, "Temperature "+ strrep(material, "_", " "));
+            title(ax, "F1tdc "+ material);
             hold(ax, "on");
         end
     end
