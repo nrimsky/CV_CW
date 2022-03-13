@@ -8,6 +8,17 @@ ACRYLIC = dir("acrylic*.mat");
 
 SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_FOAM, ACRYLIC];
 
+% 'F0Electrodes','F1Electrodes', - Electrode Impedance
+% 'F0pac','F1pac',                   - High Frequency Fluid Vibrations
+% 'F0pdc','F1pdc',                   - Low Frequency Fluid Pressure
+% 'F0tac','F1tac',                   - Core Temperature Change
+% 'F0tdc','F1tdc',                   - Core Temperature
+% 'JEff',                        - Robot arm joint effort (load)
+% 'JPos'  – Robot arm joint positions
+% 'JVel'                         - Robot arm joint velocity
+
+% The Pac variable is 22-dimensional, but should be 1-dimensional. Please only use the second row when sampling. Thanks to Ezgi for spotting this.   
+
 %% Section A: Data Preparation - [10 marks]
 
 % 1. Use the plot command to view the time series sensor data for the variables Pressure, Vibration
@@ -15,9 +26,6 @@ SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_
 % choose a single time step that looks like it will allow differentiation between the data for
 % different objects. Explain why you chose that value. Include an example of your data
 % visualisation for one or two object trials in your report.
-
-% NOTE: I am currently unsure which columns are temperature, pressure and
-% vibration and was guessing. Need to confirm this.
 
 fig = figure(1);
 all_files = dir("*.mat");
@@ -46,8 +54,8 @@ for i = 1:size(all_files)
         if contains(file.name, material)
             load(file.name);
             ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1tac);
-            plot(ax, 1:n, F1tac(1,:));
+            [~, n] = size(F1pac);
+            plot(ax, 1:n, F1pac(2,:));
             title(ax, "Vibration "+ strrep(material, "_", " "));
             hold(ax, "on");
         end
@@ -79,8 +87,8 @@ for i = 1:6
     material = SEPARATE_MATERIALS(i);
     file = material(1,1).name;
     load(file);
-    [~, n] = size(F1tac);
-    plot(ax, 1:n, F1tac(1,:));
+    [~, n] = size(F1pac);
+    plot(ax, 1:n, F1pac(2,:));
 end
 title(ax, "Vibration");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
