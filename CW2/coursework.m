@@ -1,4 +1,12 @@
 MATERIALS = ["steel_vase", "kitchen_sponge", "flour_sack", "car_sponge", "black_foam", "acrylic"];
+STEEL_VASE = dir("steel_vase*.mat");
+KITCHEN_SPONGE = dir("kitchen_sponge*.mat");
+FLOUR_SACK = dir("flour_sack*.mat");
+CAR_SPONGE = dir("car_sponge*.mat");
+BLACK_FOAM = dir("black_foam*.mat");
+ACRYLIC = dir("acrylic*.mat");
+
+SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_FOAM, ACRYLIC];
 
 %% Section A: Data Preparation - [10 marks]
 
@@ -7,6 +15,9 @@ MATERIALS = ["steel_vase", "kitchen_sponge", "flour_sack", "car_sponge", "black_
 % choose a single time step that looks like it will allow differentiation between the data for
 % different objects. Explain why you chose that value. Include an example of your data
 % visualisation for one or two object trials in your report.
+
+% NOTE: I am currently unsure which columns are temperature, pressure and
+% vibration and was guessing. Need to confirm this.
 
 fig = figure(1);
 all_files = dir("*.mat");
@@ -17,7 +28,7 @@ for i = 1:size(all_files)
         if contains(file.name, material)
             load(file.name);
             ax = subplot(2,3, j, "Parent", fig);
-            [m, n] = size(F1pdc);
+            [~, n] = size(F1pdc);
             plot(ax, 1:n, F1pdc(1,:));
             title(ax, "Pressure "+ strrep(material, "_", " "));
             hold(ax, "on");
@@ -35,7 +46,7 @@ for i = 1:size(all_files)
         if contains(file.name, material)
             load(file.name);
             ax = subplot(2,3, j, "Parent", fig);
-            [m, n] = size(F1tac);
+            [~, n] = size(F1tac);
             plot(ax, 1:n, F1tac(1,:));
             title(ax, "Vibration "+ strrep(material, "_", " "));
             hold(ax, "on");
@@ -53,13 +64,54 @@ for i = 1:size(all_files)
         if contains(file.name, material)
             load(file.name);
             ax = subplot(2,3, j, "Parent", fig);
-            [m, n] = size(F1tdc);
+            [~, n] = size(F1tdc);
             plot(ax, 1:n, F1tdc(1,:));
             title(ax, "Temperature "+ strrep(material, "_", " "));
             hold(ax, "on");
         end
     end
 end
+
+fig = figure(4);
+ax = subplot(3, 1, 1, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    [~, n] = size(F1tac);
+    plot(ax, 1:n, F1tac(1,:));
+end
+title(ax, "Vibration");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+hold(ax, "off");
+
+ax = subplot(3, 1, 2, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    [~, n] = size(F1pdc);
+    plot(ax, 1:n, F1pdc(1,:));
+end
+title(ax, "Pressure");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+hold(ax, "off");
+
+ax = subplot(3, 1, 3, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    [~, n] = size(F1tdc);
+    plot(ax, 1:n, F1tdc(1,:));
+end
+title(ax, "Temperature");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+hold(ax, "off");
+
 
 
 % 2. For one finger (F0 or F1), sample the Pressure, Vibration, Temperature time series data into
