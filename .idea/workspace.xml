@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e354dd7e-4947-487e-b034-3d3846c261db" name="Default Changelist" comment="Delete HEIC files">
+      <change beforePath="$PROJECT_DIR$/photos/IMG_1813.HEIC.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/photos/fd1.jpg" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="24ZVfwBVH9D9IK4SnYN8rwDGV5f" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\ninar\PycharmProjects\CV_CW\photos2\hg" />
+      <recent name="C:\Users\ninar\PycharmProjects\CV_CW\photos2\fd" />
+      <recent name="C:\Users\ninar\PycharmProjects\CV_CW\fd\photos2" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e354dd7e-4947-487e-b034-3d3846c261db" name="Default Changelist" comment="" />
+      <created>1643838202988</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1643838202988</updated>
+      <workItem from="1643838204292" duration="494000" />
+      <workItem from="1643886544587" duration="4577000" />
+      <workItem from="1643900293183" duration="1421000" />
+      <workItem from="1644238200489" duration="740000" />
+      <workItem from="1644239200263" duration="717000" />
+      <workItem from="1644252486048" duration="596000" />
+      <workItem from="1644268425787" duration="6000" />
+      <workItem from="1644330206247" duration="8000" />
+      <workItem from="1644330764815" duration="17000" />
+      <workItem from="1644575759916" duration="32000" />
+      <workItem from="1647197564431" duration="10000" />
+    </task>
+    <task id="LOCAL-00001" summary="Update requirements.txt to remove pytorch as dependency (was added by accident)">
+      <created>1643887770851</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1643887770851</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Keypoints">
+      <created>1643893377571</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1643893377571</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Try with some other images">
+      <created>1643895186533</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1643895186533</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Delete HEIC files">
+      <created>1644239248772</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1644239248772</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Update requirements.txt to remove pytorch as dependency (was added by accident)" />
+    <MESSAGE value="Keypoints" />
+    <MESSAGE value="Try with some other images" />
+    <MESSAGE value="Delete HEIC files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Delete HEIC files" />
+  </component>
+</project>
