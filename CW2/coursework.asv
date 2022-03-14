@@ -1,4 +1,9 @@
+clear all;
+close all;
+
 MATERIALS = ["steel_vase", "kitchen_sponge", "flour_sack", "car_sponge", "black_foam", "acrylic"];
+COLOURS = ["red", "greed", "blue", "black", "cyan", "magenta"];
+
 STEEL_VASE = dir("steel_vase*.mat");
 KITCHEN_SPONGE = dir("kitchen_sponge*.mat");
 FLOUR_SACK = dir("flour_sack*.mat");
@@ -27,83 +32,36 @@ SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_
 % different objects. Explain why you chose that value. Include an example of your data
 % visualisation for one or two object trials in your report.
 
+% Plotting all trials for all materials for each variable
+
 plotallvar("Pressure", 1, MATERIALS);
 plotallvar("Vibrations", 2, MATERIALS);
 plotallvar("Temperature", 3, MATERIALS);
 
+TRIAL_NUM = 5;
+
+% Overlaying P, V and T data for different materials and trial TRIAL_NUM
+
 fig = figure(4);
-ax = subplot(3, 1, 1, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1pac);
-    plot(ax, 1:n, F1pac(2,:));
-end
-title(ax, "Vibration");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-hold(ax, "off");
+trial_subplot(fig, 1, TRIAL_NUM, SEPARATE_MATERIALS, "Pressure", 1, 1000);
+trial_subplot(fig, 2, TRIAL_NUM, SEPARATE_MATERIALS, "Vibrations", 1, 1000);
+trial_subplot(fig, 3, TRIAL_NUM, SEPARATE_MATERIALS, "Temperature", 1, 1000);
 
-ax = subplot(3, 1, 2, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1pdc);
-    plot(ax, 1:n, F1pdc(1,:));
-end
-title(ax, "Pressure");
-hold(ax, "off");
+% Electrode data for different materials and trial TRIAL_NUM
 
-ax = subplot(3, 1, 3, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1tdc);
-    plot(ax, 1:n, F1tdc(1,:));
-end
-title(ax, "Temperature");
-hold(ax, "off");
+plot_electrodes(5, TRIAL_NUM, SEPARATE_MATERIALS, MATERIALS);
 
-fig = figure(5);
-ax = subplot(3, 1, 1, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    plot(ax, 5:6, F1pac(2,5:6));
-end
-title(ax, "Vibration");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-hold(ax, "off");
+% Overlaying P, V and T data for different materials and trial TRIAL_NUM at
+% time step TIME_STEP
 
-ax = subplot(3, 1, 2, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    plot(ax, 5:6, F1pdc(1,5:6));
-end
-title(ax, "Pressure");
-hold(ax, "off");
+TIME_STEP = 400;
 
-ax = subplot(3, 1, 3, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    plot(ax, 5:6, F1tdc(1,5:6));
-end
-title(ax, "Temperature");
-hold(ax, "off");
+fig = figure(6);
+trial_subplot(fig, 1, TRIAL_NUM, SEPARATE_MATERIALS, "Pressure", TIME_STEP, TIME_STEP+1);
+trial_subplot(fig, 2, TRIAL_NUM, SEPARATE_MATERIALS, "Vibrations", TIME_STEP, TIME_STEP+1);
+trial_subplot(fig, 3, TRIAL_NUM, SEPARATE_MATERIALS, "Temperature", TIME_STEP, TIME_STEP+1);
 
+%%
 
 % 2. For one finger (F0 or F1), sample the Pressure, Vibration, Temperature time series data into
 % scaler values measured at the time instance (of your selected time step) for each object / trial.
@@ -112,9 +70,50 @@ hold(ax, "off");
 % coursework will be on the data sets you just created (and therefore only on one of the robot’s
 % fingers).
 
+F1_PVT = zeros(6, 10, 3);  % # materials x # trials x # variables
+F1_ELECTRODES = zeros(6, 10, 19); % # materials x # trials x # variables
+
+for i = 1:6
+    material = SEPARATE_MATERIALS(:, i);
+    for j = 1:10
+        data = load(material(j).name);
+        F1_PVT(i,j,1) = data.F1pdc(1,TIME_STEP);  % Pressure
+        F1_PVT(i,j,2) = data.F1tdc(1,TIME_STEP);  % Temperature
+        F1_PVT(i,j,3) = data.F1pac(2,TIME_STEP);  % Vibrations
+    end
+end
+
+save("F1_PVT.mat", "F1_PVT");
+
+for i = 1:6
+    material = SEPARATE_MATERIALS(:, i);
+    for j = 1:10
+        data = load(material(j).name);
+        F1_ELECTRODES(i,j,:) = data.F1Electrodes(:,TIME_STEP);  % Electrodes
+    end
+end
+
+save("F1_ELECTRODES.mat", "F1_ELECTRODES");
+
 % 3. Create a 3D scatter plot of the complete contents of the PVT mat file, with the axis as Pressure,
 % Vibration and Temperature, with different colours used for different objects. Use the same
 % colours for the objects throughout this work.
+
+fig = figure(7);
+ax = subplot(1, 1, 1, "Parent", fig);
+for i = 1:6
+    for j = 1:10
+        scatter3(ax, F1_PVT(i, j, 1), F1_PVT(i, j, 2), F1_PVT(i, j, 3), COLOURS(i), "filled");
+        hold(ax, "on");
+    end
+end
+hold(ax, "off");
+xlabel(ax, "Pressure");
+ylabel(ax, "Vibration");
+zlabel(ax, "Temperature");
+title(ax, "PVT Scatter Plot))
+
+
 
 %% Section B: Principal Component Analysis – [25 marks]
 
@@ -195,43 +194,72 @@ function fig = plotallvar(varname, fignum, materials)
                 if varname == "Pressure"
                     [~, n] = size(data.F1pdc);
                     plot(ax, 1:n, data.F1pdc(1,:));
+                    xlabel(ax, "Time (ms)");
+                    ylabel(ax, "Pressure");
                 end
                 if varname == "Temperature"
                     [~, n] = size(data.F1tdc);
                     plot(ax, 1:n, data.F1tdc(1,:));
+                    xlabel(ax, "Time (ms)");
+                    ylabel(ax, "Temperature");
                 end
                 if varname == "Vibrations"
                     [~, n] = size(data.F1pac);
                     plot(ax, 1:n, data.F1pac(2,:));
+                    xlabel(ax, "Time (ms)");
+                    ylabel(ax, "Vibration");
                 end
                 title(ax, varname+" "+ strrep(material, "_", " "));
                 hold(ax, "on");
             end
         end
     end
+    legend(ax, "Trial 1", "Trial 2", "Trial 3", "Trial 4", "Trial 5", "Trial 6", "Trial 7", "Trial 8", "Trial 9", "Trial 10");
 end
 
-function ax = trial_subplot(fig, sub_plot_num, trial_num, seperate_materials, varname)
+function ax = trial_subplot(fig, sub_plot_num, trial_num, seperate_materials, varname, t_start, t_end)
     ax = subplot(3, 1, sub_plot_num, "Parent", fig);
     hold(ax, "on");
     for i = 1:6
-        material = seperate_materials(i);
-        file = material(1,trial_num).name;
+        file = seperate_materials(trial_num, i).name;
         data = load(file);
         if varname == "Pressure"
-            [~, n] = size(data.F1pdc);
-            plot(ax, 1:n, data.F1pdc(1,:));
+            plot(ax, t_start:t_end, data.F1pdc(1,t_start:t_end));
+            xlabel(ax, "Time (ms)");
+            ylabel(ax, "Pressure");
         end
         if varname == "Temperature"
-            [~, n] = size(data.F1tdc);
-            plot(ax, 1:n, data.F1tdc(1,:));
+            plot(ax, t_start:t_end, data.F1tdc(1,t_start:t_end));
+            xlabel(ax, "Time (ms)");
+            ylabel(ax, "Temperature");
         end
         if varname == "Vibrations"
-            [~, n] = size(data.F1pac);
-            plot(ax, 1:n, data.F1pac(2,:));
+            plot(ax, t_start:t_end, data.F1pac(2,t_start:t_end));
+            xlabel(ax, "Time (ms)");
+            ylabel(ax, "Vibration");
         end
     end
-    title(ax, "Vibration");
+    title(ax, varname);
     legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
     hold(ax, "off");
+end
+
+function fig = plot_electrodes(fignum, trial_num, seperate_materials, material_names)
+    fig = figure(fignum);
+    for i = 1:6
+        file = seperate_materials(trial_num, i).name;
+        data = load(file);
+        ax = subplot(2,3, i, "Parent", fig);
+        elec_data = data.F1Electrodes;
+        [n_electrodes, n_timesteps] = size(elec_data);
+        for j = 1:n_electrodes
+            plot(ax, 1:n_timesteps, elec_data(j,:));
+            hold(ax, "on");
+        end
+        hold(ax, "off");
+        title(ax, strrep(material_names(1, i), "_", " "));
+        xlabel(ax, "Time (ms)");
+        ylabel(ax, "Impedance");
+    end
+    legend("Electrode 1","Electrode 2","Electrode 3","Electrode 4","Electrode 5","Electrode 6","Electrode 7","Electrode 8","Electrode 9","Electrode 10","Electrode 11","Electrode 12","Electrode 13","Electrode 14","Electrode 15","Electrode 16","Electrode 17","Electrode 18","Electrode 19");
 end
