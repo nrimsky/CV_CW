@@ -17,7 +17,7 @@ SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_
 % 'JPos'  – Robot arm joint positions
 % 'JVel'                         - Robot arm joint velocity
 
-% The Pac variable is 22-dimensional, but should be 1-dimensional. Please only use the second row when sampling. Thanks to Ezgi for spotting this.   
+% The Pac variable is 22-dimensional, but should be 1-dimensional. Please only use the second row when sampling. Thanks to Ezgi for spotting this.  
 
 %% Section A: Data Preparation - [10 marks]
 
@@ -27,100 +27,14 @@ SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_
 % different objects. Explain why you chose that value. Include an example of your data
 % visualisation for one or two object trials in your report.
 
-fig = figure(1);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1pdc);
-            plot(ax, 1:n, F1pdc(1,:));
-            title(ax, "Pressure "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
-
-
-fig = figure(2);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1pac);
-            plot(ax, 1:n, F1pac(2,:));
-            title(ax, "Vibration "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
-
-
-fig = figure(3);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1tdc);
-            plot(ax, 1:n, F1tdc(1,:));
-            title(ax, "Temperature "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
+plotallvar("Pressure", 1, MATERIALS);
+plotallvar("Vibrations", 2, MATERIALS);
+plotallvar("Temperature", 3, MATERIALS);
 
 fig = figure(4);
-ax = subplot(3, 1, 1, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1pac);
-    plot(ax, 1:n, F1pac(2,:));
-end
-title(ax, "Vibration");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-hold(ax, "off");
-
-ax = subplot(3, 1, 2, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1pdc);
-    plot(ax, 1:n, F1pdc(1,:));
-end
-title(ax, "Pressure");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-hold(ax, "off");
-
-ax = subplot(3, 1, 3, "Parent", fig);
-hold(ax, "on");
-for i = 1:6
-    material = SEPARATE_MATERIALS(i);
-    file = material(1,1).name;
-    load(file);
-    [~, n] = size(F1tdc);
-    plot(ax, 1:n, F1tdc(1,:));
-end
-title(ax, "Temperature");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-hold(ax, "off");
-
-
+trial_subplot(fig, 1, 1, SEPARATE_MATERIALS, "Pressure", 1, 1000);
+trial_subplot(fig, 2, 1, SEPARATE_MATERIALS, "Vibrations", 1, 1000);
+trial_subplot(fig, 3, 1, SEPARATE_MATERIALS, "Temperature", 1, 1000);
 
 % 2. For one finger (F0 or F1), sample the Pressure, Vibration, Temperature time series data into
 % scaler values measured at the time instance (of your selected time step) for each object / trial.
@@ -195,3 +109,60 @@ hold(ax, "off");
 % d. Our analysis is based on a single time step access all the available data sensor data.
 % Discuss an alternative method we could use to prepare the data for pattern
 % recognition. What are the pros and cons of this other approach?
+
+%% Functions
+
+function fig = plotallvar(varname, fignum, materials)
+    [~, n_materials] = size(materials);
+    fig = figure(fignum);
+    all_files = dir("*.mat");
+    for i = 1:size(all_files)
+        file = all_files(i);
+        for j = 1:n_materials
+            material = materials(j);
+            if contains(file.name, material)
+                data = load(file.name);
+                ax = subplot(2,3, j, "Parent", fig);
+                if varname == "Pressure"
+                    [~, n] = size(data.F1pdc);
+                    plot(ax, 1:n, data.F1pdc(1,:));
+                end
+                if varname == "Temperature"
+                    [~, n] = size(data.F1tdc);
+                    plot(ax, 1:n, data.F1tdc(1,:));
+                end
+                if varname == "Vibrations"
+                    [~, n] = size(data.F1pac);
+                    plot(ax, 1:n, data.F1pac(2,:));
+                end
+                title(ax, varname+" "+ strrep(material, "_", " "));
+                hold(ax, "on");
+            end
+        end
+    end
+end
+
+function ax = trial_subplot(fig, sub_plot_num, trial_num, seperate_materials, varname, t_start, t_end)
+    ax = subplot(3, 1, sub_plot_num, "Parent", fig);
+    hold(ax, "on");
+    for i = 1:6
+        material = seperate_materials(i);
+        file = material(1,trial_num).name;
+        data = load(file);
+        if varname == "Pressure"
+            [~, n] = size(data.F1pdc);
+            plot(ax, 1:n, data.F1pdc(1,t_start:t_end));
+        end
+        if varname == "Temperature"
+            [~, n] = size(data.F1tdc);
+            plot(ax, 1:n, data.F1tdc(1,t_start:t_end));
+        end
+        if varname == "Vibrations"
+            [~, n] = size(data.F1pac);
+            plot(ax, 1:n, data.F1pac(2,t_start:t_end));
+        end
+    end
+    title(ax, varname);
+    legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+    hold(ax, "off");
+end

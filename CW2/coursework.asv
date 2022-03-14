@@ -8,6 +8,17 @@ ACRYLIC = dir("acrylic*.mat");
 
 SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_FOAM, ACRYLIC];
 
+% 'F0Electrodes','F1Electrodes', - Electrode Impedance
+% 'F0pac','F1pac',                   - High Frequency Fluid Vibrations
+% 'F0pdc','F1pdc',                   - Low Frequency Fluid Pressure
+% 'F0tac','F1tac',                   - Core Temperature Change
+% 'F0tdc','F1tdc',                   - Core Temperature
+% 'JEff',                        - Robot arm joint effort (load)
+% 'JPos'  – Robot arm joint positions
+% 'JVel'                         - Robot arm joint velocity
+
+% The Pac variable is 22-dimensional, but should be 1-dimensional. Please only use the second row when sampling. Thanks to Ezgi for spotting this.  
+
 %% Section A: Data Preparation - [10 marks]
 
 % 1. Use the plot command to view the time series sensor data for the variables Pressure, Vibration
@@ -16,61 +27,9 @@ SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_
 % different objects. Explain why you chose that value. Include an example of your data
 % visualisation for one or two object trials in your report.
 
-% NOTE: I am currently unsure which columns are temperature, pressure and
-% vibration and was guessing. Need to confirm th
-
-fig = figure(1);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1pdc);
-            plot(ax, 1:n, F1pdc(1,:));
-            title(ax, "Pressure "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
-
-
-fig = figure(2);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1tac);
-            plot(ax, 1:n, F1tac(1,:));
-            title(ax, "Vibration "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
-
-
-fig = figure(3);
-all_files = dir("*.mat");
-for i = 1:size(all_files)
-    file = all_files(i);
-    for j = 1:n_materials
-        material = MATERIALS(j);
-        if contains(file.name, material)
-            load(file.name);
-            ax = subplot(2,3, j, "Parent", fig);
-            [~, n] = size(F1tdc);
-            plot(ax, 1:n, F1tdc(1,:));
-            title(ax, "Temperature "+ strrep(material, "_", " "));
-            hold(ax, "on");
-        end
-    end
-end
+plotallvar("Pressure", 1, MATERIALS);
+plotallvar("Vibrations", 2, MATERIALS);
+plotallvar("Temperature", 3, MATERIALS);
 
 fig = figure(4);
 ax = subplot(3, 1, 1, "Parent", fig);
@@ -79,8 +38,8 @@ for i = 1:6
     material = SEPARATE_MATERIALS(i);
     file = material(1,1).name;
     load(file);
-    [~, n] = size(F1tac);
-    plot(ax, 1:n, F1tac(1,:));
+    [~, n] = size(F1pac);
+    plot(ax, 1:n, F1pac(2,:));
 end
 title(ax, "Vibration");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
@@ -96,7 +55,6 @@ for i = 1:6
     plot(ax, 1:n, F1pdc(1,:));
 end
 title(ax, "Pressure");
-legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
 hold(ax, "off");
 
 ax = subplot(3, 1, 3, "Parent", fig);
@@ -109,9 +67,42 @@ for i = 1:6
     plot(ax, 1:n, F1tdc(1,:));
 end
 title(ax, "Temperature");
+hold(ax, "off");
+
+fig = figure(5);
+ax = subplot(3, 1, 1, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    plot(ax, 5:6, F1pac(2,5:6));
+end
+title(ax, "Vibration");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
 hold(ax, "off");
 
+ax = subplot(3, 1, 2, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    plot(ax, 5:6, F1pdc(1,5:6));
+end
+title(ax, "Pressure");
+hold(ax, "off");
+
+ax = subplot(3, 1, 3, "Parent", fig);
+hold(ax, "on");
+for i = 1:6
+    material = SEPARATE_MATERIALS(i);
+    file = material(1,1).name;
+    load(file);
+    plot(ax, 5:6, F1tdc(1,5:6));
+end
+title(ax, "Temperature");
+hold(ax, "off");
 
 
 % 2. For one finger (F0 or F1), sample the Pressure, Vibration, Temperature time series data into
@@ -187,3 +178,60 @@ hold(ax, "off");
 % d. Our analysis is based on a single time step access all the available data sensor data.
 % Discuss an alternative method we could use to prepare the data for pattern
 % recognition. What are the pros and cons of this other approach?
+
+%% Functions
+
+function fig = plotallvar(varname, fignum, materials)
+    [~, n_materials] = size(materials);
+    fig = figure(fignum);
+    all_files = dir("*.mat");
+    for i = 1:size(all_files)
+        file = all_files(i);
+        for j = 1:n_materials
+            material = materials(j);
+            if contains(file.name, material)
+                data = load(file.name);
+                ax = subplot(2,3, j, "Parent", fig);
+                if varname == "Pressure"
+                    [~, n] = size(data.F1pdc);
+                    plot(ax, 1:n, data.F1pdc(1,:));
+                end
+                if varname == "Temperature"
+                    [~, n] = size(data.F1tdc);
+                    plot(ax, 1:n, data.F1tdc(1,:));
+                end
+                if varname == "Vibrations"
+                    [~, n] = size(data.F1pac);
+                    plot(ax, 1:n, data.F1pac(2,:));
+                end
+                title(ax, varname+" "+ strrep(material, "_", " "));
+                hold(ax, "on");
+            end
+        end
+    end
+end
+
+function ax = trial_subplot(fig, sub_plot_num, trial_num, seperate_materials, varname)
+    ax = subplot(3, 1, sub_plot_num, "Parent", fig);
+    hold(ax, "on");
+    for i = 1:6
+        material = seperate_materials(i);
+        file = material(1,trial_num).name;
+        data = load(file);
+        if varname == "Pressure"
+            [~, n] = size(data.F1pdc);
+            plot(ax, 1:n, data.F1pdc(1,:));
+        end
+        if varname == "Temperature"
+            [~, n] = size(data.F1tdc);
+            plot(ax, 1:n, data.F1tdc(1,:));
+        end
+        if varname == "Vibrations"
+            [~, n] = size(data.F1pac);
+            plot(ax, 1:n, data.F1pac(2,:));
+        end
+    end
+    title(ax, "Vibration");
+    legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+    hold(ax, "off");
+end
