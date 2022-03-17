@@ -135,21 +135,28 @@ pvt_std = std(pvt_3d_points, 1);
 pvt_3d_points_normalised = (pvt_3d_points - pvt_mean) ./ pvt_std;
 
 % Calculate covariance matrix
-C = cov(pvt_3d_points);
+C = cov(pvt_3d_points_normalised);
+disp(C);
 
 % Calculate eigen vectors/values of covariance matrix
 [V,D] = eig(C);
+disp(V);
+disp(D);
 
-% Sort eigenvectros of covariance matrix in order 
+% Sort eigenvectors of covariance matrix in order of decreasing eigenvalue
+% magnitude 
 [out,idx] = sort([D(1,1), D(2,2), D(3,3)]);
 pca_coeff = V(:, idx);
 
-
+% Prepare PCA data from plotting vectors as lines from origin
 lines = zeros(2,3,3);
 lines(2, :, :) = pca_coeff';
 
+% Reshape PVT data so that classes can be colour coded
 pvt_3d_points_normalised_reshaped = reshape(pvt_3d_points_normalised, size(F1_PVT));
-fig = figure(7);
+
+% Create scatter plot
+fig = figure(8);
 ax = subplot(1, 1, 1, "Parent", fig);
 for i = 1:6
     scatter3(ax, pvt_3d_points_normalised_reshaped(i, :, 1), pvt_3d_points_normalised_reshaped(i, :, 2), pvt_3d_points_normalised_reshaped(i, :, 3), "o", COLOURS(i), "filled");
@@ -163,29 +170,27 @@ title(ax, "Standardised PVT Scatter Plot with principle components");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic", "PC1", "PC2", "PC3");
 hold(ax, "off");
 
+% Project data onto principle components
+projected = pvt_3d_points_normalised * pca_coeff';
 
-% 
-% 
-% 
-% vectors = zeros(2, 3, 3);
-% vectors(1, :, :) = pca_coeff;
-% 
-% figure(8);
-% 
-% for i = 1:10
-%     for j = 1:6
-%         scatter3(F1_PVT(j, i, 1), F1_PVT(j, i, 2), F1_PVT(j, i, 3), COLOURS(j), "filled");
-%         hold on;
-%     end
-% end
-% plot3(vectors(:,:,1), vectors(:, :,2),vectors(:, :,3), "-", "linewidth", 2);
-% 
-% xlabel("Pressure");
-% ylabel("Vibration");
-% zlabel("Temperature");
-% title("PVT Scatter Plot");
-% 
-% hold off;
+% Show scatter plot of data projected onto top 2 PC's
+projected_2d = projected(:, 1:2);
+projected_2d_reshaped = reshape(projected_2d, [6, 10, 2]);
+fig = figure(9);
+ax = subplot(1, 1, 1, "Parent", fig);
+for i = 1:6
+    scatter(ax, projected_2d_reshaped(i, :, 1), projected_2d_reshaped(i, :, 2), "o", COLOURS(i), "filled");
+    hold(ax, "on");
+end
+xlabel(ax, "PC1");
+ylabel(ax, "PC2");
+title(ax, "Scatter Plot of PVT data projected down with 2 principle components");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam");
+hold(ax, "off");
+
+% Show 3 1D plot of data projected onto each PC
+
+
 
 % 2. There are 19 electrodes per sensor, so relationship between the electrodes for different
 % objects cannot be easily visualised as in the last questions.
@@ -323,4 +328,10 @@ function fig = plot_electrodes(fignum, trial_num, seperate_materials, material_n
         ylabel(ax, "Impedance");
     end
     legend("Electrode 1","Electrode 2","Electrode 3","Electrode 4","Electrode 5","Electrode 6","Electrode 7","Electrode 8","Electrode 9","Electrode 10","Electrode 11","Electrode 12","Electrode 13","Electrode 14","Electrode 15","Electrode 16","Electrode 17","Electrode 18","Electrode 19");
+end
+
+function ax = plot_pc(fig, pc_num, pc_data)
+    ax = subplot(3,1, pc_num, "Parent", fig);
+    for i = 1:6
+        
 end

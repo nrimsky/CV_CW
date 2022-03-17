@@ -145,18 +145,18 @@ disp(D);
 
 % Sort eigenvectors of covariance matrix in order of decreasing eigenvalue
 % magnitude 
-[out,idx] = sort([D(1,1), D(2,2), D(3,3)]);
+[~,idx] = sort(diag(D), 'descend');
 pca_coeff = V(:, idx);
 
 % Prepare PCA data from plotting vectors as lines from origin
 lines = zeros(2,3,3);
-lines(2, :, :) = pca_coeff';
+lines(2, :, :) = pca_coeff;
 
 % Reshape PVT data so that classes can be colour coded
 pvt_3d_points_normalised_reshaped = reshape(pvt_3d_points_normalised, size(F1_PVT));
 
 % Create scatter plot
-fig = figure(7);
+fig = figure(8);
 ax = subplot(1, 1, 1, "Parent", fig);
 for i = 1:6
     scatter3(ax, pvt_3d_points_normalised_reshaped(i, :, 1), pvt_3d_points_normalised_reshaped(i, :, 2), pvt_3d_points_normalised_reshaped(i, :, 3), "o", COLOURS(i), "filled");
@@ -170,10 +170,33 @@ title(ax, "Standardised PVT Scatter Plot with principle components");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic", "PC1", "PC2", "PC3");
 hold(ax, "off");
 
-% Project data onto first two principle components
+% Project data onto principle components
 projected = pvt_3d_points_normalised * pca_coeff;
-projected_2d = projected(:, :, 1:2);
 
+% Show scatter plot of data projected onto top 2 PC's
+projected_2d = projected(:, 1:2);
+projected_2d_reshaped = reshape(projected_2d, [6, 10, 2]);
+fig = figure(9);
+ax = subplot(1, 1, 1, "Parent", fig);
+for i = 1:6
+    scatter(ax, projected_2d_reshaped(i, :, 1), projected_2d_reshaped(i, :, 2), "o", COLOURS(i), "filled");
+    hold(ax, "on");
+end
+xlabel(ax, "PC1");
+ylabel(ax, "PC2");
+title(ax, "Scatter Plot of PVT data projected down with 2 principle components");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam");
+hold(ax, "off");
+
+% Show 3 1D plot of data projected onto each PC
+projected_reshaped = reshape(projected, [6, 10, 3]);
+fig = figure(10);
+plot_pc(fig, 1, projected_reshaped(:,:,1), COLOURS);
+plot_pc(fig, 2, projected_reshaped(:,:,2), COLOURS);
+ax = plot_pc(fig, 3, projected_reshaped(:,:,3), COLOURS);
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+
+%%
 
 % 2. There are 19 electrodes per sensor, so relationship between the electrodes for different
 % objects cannot be easily visualised as in the last questions.
@@ -182,6 +205,50 @@ projected_2d = projected(:, :, 1:2);
 % b. Visualize the electrode data using the three principal components with largest
 % variance.
 % c. Comment on your findings. 
+
+% Reshape data by removing class dimension
+electrode_3d_points = reshape(F1_ELECTRODES, [60, 19]);
+
+% Standardise data by subtracting mean and dividing by standard deviation
+electrode_mean = mean(electrode_3d_points, 1);
+electrode_std = std(electrode_3d_points, 1);
+electrode_3d_points_normalised = (electrode_3d_points - electrode_mean) ./ electrode_std;
+
+% Calculate covariance matrix
+C = cov(electrode_3d_points_normalised);
+
+% Calculate eigen vectors/values of covariance matrix
+[V,D] = eig(C);
+
+% Sort eigenvectors of covariance matrix in order of decreasing eigenvalue
+% magnitude 
+[eigs,idx] = sort(diag(D), 'descend');
+electrode_pca_coeff = V(:, idx);
+
+% Show variances of each principal component using a Scree plot
+fig = figure(11);
+ax = subplot(1, 1, 1, "Parent", fig);
+plot(ax, 1:size(eigs), eigs, '-o');
+title(ax, "Scree plot");
+xlabel(ax, "Principle component");
+ylabel(ax, "Variance");
+xticks(ax, 1:size(eigs));
+
+% Visualize the electrode data using the three principal components with largest variance.
+projected = reshape(electrode_3d_points_normalised * electrode_pca_coeff, size(F1_ELECTRODES));
+fig = figure(12);
+ax = subplot(1, 1, 1, "Parent", fig);
+for i = 1:6
+    scatter3(ax, projected(i, :, 1), projected(i, :, 2), projected(i, :, 3), "o", COLOURS(i), "filled");
+    hold(ax, "on");
+end
+xlabel(ax, "PC 1");
+ylabel(ax, "PC 2");
+zlabel(ax, "PC 3");
+title(ax, "Electrode data projected onto top 3 principle components");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+hold(ax, "off");
+
 
 %% Section C: Linear Discriminant Analysis (LDA) - [20 marks]
 
@@ -311,4 +378,14 @@ function fig = plot_electrodes(fignum, trial_num, seperate_materials, material_n
         ylabel(ax, "Impedance");
     end
     legend("Electrode 1","Electrode 2","Electrode 3","Electrode 4","Electrode 5","Electrode 6","Electrode 7","Electrode 8","Electrode 9","Electrode 10","Electrode 11","Electrode 12","Electrode 13","Electrode 14","Electrode 15","Electrode 16","Electrode 17","Electrode 18","Electrode 19");
+end
+
+function ax = plot_pc(fig, pc_num, pc_data, colours)
+    ax = subplot(3,1, pc_num, "Parent", fig);
+    for i = 1:6
+        scatter(ax, pc_data(i,:), zeros(size(pc_data(i,:))), "o", colours(i), "filled");
+        hold(ax, "on");
+    end
+    title(ax, "PC "+num2str(pc_num));
+    xlim([-5, 5]);
 end
