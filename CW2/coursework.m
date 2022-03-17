@@ -2,7 +2,8 @@ clear all;
 close all;
 
 MATERIALS = ["steel_vase", "kitchen_sponge", "flour_sack", "car_sponge", "black_foam", "acrylic"];
-COLOURS = ["red", "greed", "blue", "black", "cyan", "magenta"];
+COLOURS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
+PCA_COLOURS = ["red", "green", "blue"];
 
 STEEL_VASE = dir("steel_vase*.mat");
 KITCHEN_SPONGE = dir("kitchen_sponge*.mat");
@@ -13,14 +14,14 @@ ACRYLIC = dir("acrylic*.mat");
 
 SEPARATE_MATERIALS = [STEEL_VASE, KITCHEN_SPONGE, FLOUR_SACK, CAR_SPONGE, BLACK_FOAM, ACRYLIC];
 
-% 'F0Electrodes','F1Electrodes', - Electrode Impedance
-% 'F0pac','F1pac',                   - High Frequency Fluid Vibrations
-% 'F0pdc','F1pdc',                   - Low Frequency Fluid Pressure
-% 'F0tac','F1tac',                   - Core Temperature Change
-% 'F0tdc','F1tdc',                   - Core Temperature
-% 'JEff',                        - Robot arm joint effort (load)
-% 'JPos'  – Robot arm joint positions
-% 'JVel'                         - Robot arm joint velocity
+% "F0Electrodes","F1Electrodes", - Electrode Impedance
+% "F0pac","F1pac",                   - High Frequency Fluid Vibrations
+% "F0pdc","F1pdc",                   - Low Frequency Fluid Pressure
+% "F0tac","F1tac",                   - Core Temperature Change
+% "F0tdc","F1tdc",                   - Core Temperature
+% "JEff",                        - Robot arm joint effort (load)
+% "JPos"  – Robot arm joint positions
+% "JVel"                         - Robot arm joint velocity
 
 % The Pac variable is 22-dimensional, but should be 1-dimensional. Please only use the second row when sampling. Thanks to Ezgi for spotting this.  
 
@@ -114,8 +115,6 @@ title(ax, "PVT Scatter Plot");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
 hold(ax, "off");
 
-
-
 %% Section B: Principal Component Analysis – [25 marks]
 
 % 1. Using PCA (Principal Component Analysis) determine the principal components of the PVT
@@ -126,6 +125,55 @@ hold(ax, "off");
 % d. Show how the data is distributed across all principal components by plotting as
 % separate 1D number lines.
 % e. Comment on your findings.
+
+% Reshape data by removing class dimension
+pvt_3d_points = reshape(F1_PVT, [60, 3]);
+
+% Standardise data by subtracting mean and dividing by standard deviation
+pvt_mean = mean(pvt_3d_points, 1);
+pvt_std = std(pvt_3d_points, 1);
+pvt_3d_points_normalised = (pvt_3d_points - pvt_mean) ./ pvt_std;
+
+% Calculate covariance matrix
+C = cov(pvt_3d_points_normalised);
+disp(C);
+
+% Calculate eigen vectors/values of covariance matrix
+[V,D] = eig(C);
+disp(V);
+disp(D);
+
+% Sort eigenvectors of covariance matrix in order of decreasing eigenvalue
+% magnitude 
+[out,idx] = sort([D(1,1), D(2,2), D(3,3)]);
+pca_coeff = V(:, idx);
+
+% Prepare PCA data from plotting vectors as lines from origin
+lines = zeros(2,3,3);
+lines(2, :, :) = pca_coeff';
+
+% Reshape PVT data so that classes can be colour coded
+pvt_3d_points_normalised_reshaped = reshape(pvt_3d_points_normalised, size(F1_PVT));
+
+% Create scatter plot
+fig = figure(7);
+ax = subplot(1, 1, 1, "Parent", fig);
+for i = 1:6
+    scatter3(ax, pvt_3d_points_normalised_reshaped(i, :, 1), pvt_3d_points_normalised_reshaped(i, :, 2), pvt_3d_points_normalised_reshaped(i, :, 3), "o", COLOURS(i), "filled");
+    hold(ax, "on");
+end
+plot3(ax, lines(:,:, 1), lines(:,:, 2), lines(:,:, 3), "linewidth", 2);
+xlabel(ax, "Pressure");
+ylabel(ax, "Vibration");
+zlabel(ax, "Temperature");
+title(ax, "Standardised PVT Scatter Plot with principle components");
+legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic", "PC1", "PC2", "PC3");
+hold(ax, "off");
+
+% Project data onto first two principle components
+projected = pvt_3d_points_normalised * pca_coeff;
+projected_2d = projected(:, :, 1:2);
+
 
 % 2. There are 19 electrodes per sensor, so relationship between the electrodes for different
 % objects cannot be easily visualised as in the last questions.
