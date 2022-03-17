@@ -20,4 +20,4 @@ jupyter-lab
 
 (Can replace `c:\Python35` with correct Python version)
 
-![lucky cat sculpture](photos/IMG_1803.HEIC.jpg)
+![lucky cat sculpture](CW1/photos/IMG_1803.HEIC.jpg)
