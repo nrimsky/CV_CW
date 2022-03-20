@@ -3,6 +3,7 @@ close all;
 
 MATERIALS = ["steel_vase", "kitchen_sponge", "flour_sack", "car_sponge", "black_foam", "acrylic"];
 COLOURS = ["red", "green", "blue", "cyan", "magenta", "yellow"];
+MARKER_TYPES = ['o', '+', '*', 's', 'd', '^'];
 PCA_COLOURS = ["red", "green", "blue"];
 
 STEEL_VASE = dir("steel_vase*.mat");
@@ -235,11 +236,11 @@ ylabel(ax, "Variance");
 xticks(ax, 1:size(eigs));
 
 % Visualize the electrode data using the three principal components with largest variance.
-projected = reshape(electrode_3d_points_normalised * electrode_pca_coeff, size(F1_ELECTRODES));
+electrodes_projected = reshape(electrode_3d_points_normalised * electrode_pca_coeff, size(F1_ELECTRODES));
 fig = figure(12);
 ax = subplot(1, 1, 1, "Parent", fig);
 for i = 1:6
-    scatter3(ax, projected(i, :, 1), projected(i, :, 2), projected(i, :, 3), "o", COLOURS(i), "filled");
+    scatter3(ax, electrodes_projected(i, :, 1), electrodes_projected(i, :, 2), electrodes_projected(i, :, 3), "o", COLOURS(i), "filled");
     hold(ax, "on");
 end
 xlabel(ax, "PC 1");
@@ -272,6 +273,16 @@ hold(ax, "off");
 % c. Change the distance metric, repeat the clustering and comment on the change in the
 % outcome.
 
+% K means on normalised data, with k = 6 clusters, different distances
+idx1 = clustering(pvt_3d_points_normalised, COLOURS, MARKER_TYPES, 'sqeuclidean');
+disp(clustering_accuracy(idx1));
+idx2 = clustering(pvt_3d_points_normalised, COLOURS, MARKER_TYPES, 'cityblock');
+disp(clustering_accuracy(idx2));
+idx3  = clustering(pvt_3d_points_normalised, COLOURS, MARKER_TYPES, 'cosine');
+disp(clustering_accuracy(idx3));
+idx4 = clustering(pvt_3d_points_normalised, COLOURS, MARKER_TYPES, 'correlation');
+disp(clustering_accuracy(idx4));
+
 % 2. Now apply bagging (bootstrap aggregation for an ensemble of decision trees) to the electrode
 % data that was processed with PCA in section B.2.b. Use a 60 / 40 split for Training / Test data.
 % a. Specify the number of bags / trees you used. Why did you choose this number?
@@ -280,6 +291,42 @@ hold(ax, "off");
 % object type is the class) and comment on the overall accuracy.
 % d. Discuss the following: How can misclassifications in your results be explained given
 % the object properties? Do you think the PCA step was helpful?
+
+% Split into train and test set
+[m,n] = size(projected) ;
+split = 0.60;
+idx = randperm(m)  ;
+train = projected(idx(1:round(split*m)),:); 
+test = projected(idx(round(split*m)+1:end),:);
+
+% Make labels
+labels = ones(6, 10, 1);
+for i = 1:6
+    labels(i,:,:) = i;
+end
+labels = reshape(labels, 60, 1);
+train_labels = labels(idx(1:round(split*m)),:);
+test_labels = labels(idx(round(split*m)+1:end),:);
+
+% Train a bagging moddel
+NUM_TREES = 12;
+B = TreeBagger(NUM_TREES,train,train_labels, 'OOBPrediction', 'on');
+view(B.Trees{1},'Mode','graph');
+view(B.Trees{2},'Mode','graph');
+
+% Plot OOB error to find optimal number of trees (works when NUM_TREES high)
+% Shows a local minima at 12
+figure();
+oobErrorBaggedEnsemble = oobError(B);
+plot(oobErrorBaggedEnsemble, "linewidth", 2);
+xticks(1:12);
+xlabel('Number of grown trees');
+ylabel('Out-of-bag classification error');
+
+% Test model and display confusion matrix
+preds = cellfun(@str2num,predict(B, test));
+C = confusionmat(test_labels,preds);
+confusionchart(C);
 
 %% Section E: Conclusion – [15 marks]
 
@@ -292,7 +339,8 @@ hold(ax, "off");
 % your answer based on your findings.
 % d. Our analysis is based on a single time step access all the available data sensor data.
 % Discuss an alternative method we could use to prepare the data for pattern
-% recognition. What are the pros and cons of this other approach?
+% recognition. What are the pros and cons of this other approach
+
 
 %% Functions
 
@@ -388,4 +436,52 @@ function ax = plot_pc(fig, pc_num, pc_data, colours)
     end
     title(ax, "PC "+num2str(pc_num));
     xlim([-5, 5]);
+end
+
+function idx = clustering(pvt_3d_points_normalised, colours, marker_types, distance_metric)
+    idx = kmeans(pvt_3d_points_normalised, 6, "Distance", distance_metric); 
+
+    fig = figure();
+    ax = subplot(1, 1, 1, "Parent", fig);
+
+    % Plot ground truth labels
+    reshaped = reshape(pvt_3d_points_normalised, [6, 10, 3]);
+    for j = 1:6
+        scatter3(ax, reshaped(j, :, 1), reshaped(j, :, 2), reshaped(j, :, 3), 80, "o", colours(j), "filled");
+        hold(ax, "on");
+    end
+
+    % Plot clusters
+    for j = 1:6
+        data = pvt_3d_points_normalised(idx == j, :);
+        scatter3(ax, data(:, 1), data(:, 2), data(:, 3), 40, marker_types(j), "black", "linewidth", 1.5);
+    end
+    legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic", "1", "2", "3", "4", "5", "6");
+    xlabel(ax, "Pressure");
+    ylabel(ax, "Vibration");
+    zlabel(ax, "Temperature");
+    title(ax, "Clustered data with k=6 clusters, "+distance_metric+" distance metric");
+    hold(ax, "off");
+end
+
+function acc = clustering_accuracy(idx)
+    labels1 = [1,2,3,4,5,6]';
+    labels2 = [2,3,4,5,6,1]';
+    labels3 = [3,4,5,6,1,2]';
+    labels4 = [4,5,6,1,2,3]';
+    labels5 = [5,6,1,2,3,4]';
+    labels6 = [2,3,4,5,6,1]';
+    l1 = repmat(labels1,10,1);
+    l2 = repmat(labels2,10,1);
+    l3 = repmat(labels3,10,1);
+    l4 = repmat(labels4,10,1);
+    l5 = repmat(labels5,10,1);
+    l6 = repmat(labels6,10,1);
+    acc1 = sum(idx == l1) / 60;
+    acc2 = sum(idx == l2) / 60;
+    acc3 = sum(idx == l3) / 60;
+    acc4 = sum(idx == l4) / 60;
+    acc5 = sum(idx == l5) / 60;
+    acc6 = sum(idx == l6) / 60;
+    acc = max([acc1, acc2, acc3, acc4, acc5, acc6]);
 end
