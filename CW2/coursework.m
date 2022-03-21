@@ -309,21 +309,23 @@ train_labels = labels(idx(1:round(split*m)),:);
 test_labels = labels(idx(round(split*m)+1:end),:);
 
 % Train a bagging moddel
-NUM_TREES = 12;
+NUM_TREES = 8;
 B = TreeBagger(NUM_TREES,train,train_labels, 'OOBPrediction', 'on');
 view(B.Trees{1},'Mode','graph');
 view(B.Trees{2},'Mode','graph');
 
 % Plot OOB error to find optimal number of trees (works when NUM_TREES high)
 % Shows a local minima at 12
-figure();
+fig = figure();
+ax = subplot(1,1,1, "Parent", fig);
 oobErrorBaggedEnsemble = oobError(B);
-plot(oobErrorBaggedEnsemble, "linewidth", 2);
-xticks(1:12);
+plot(ax, oobErrorBaggedEnsemble, "linewidth", 2);
+xticks(1:NUM_TREES);
 xlabel('Number of grown trees');
 ylabel('Out-of-bag classification error');
 
 % Test model and display confusion matrix
+figure();
 preds = cellfun(@str2num,predict(B, test));
 C = confusionmat(test_labels,preds);
 confusionchart(C);
