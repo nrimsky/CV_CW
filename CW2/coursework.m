@@ -403,6 +403,7 @@ function ax = trial_subplot(fig, sub_plot_num, trial_num, seperate_materials, va
             ylabel(ax, "Vibration");
         end
     end
+    xticks(ax, [t_start, t_end]);
     title(ax, varname);
     legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
     hold(ax, "off");
