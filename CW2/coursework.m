@@ -80,8 +80,8 @@ for i = 1:6
     for j = 1:10
         data = load(material(j).name);
         F1_PVT(i,j,1) = data.F1pdc(1,TIME_STEP);  % Pressure
-        F1_PVT(i,j,2) = data.F1tdc(1,TIME_STEP);  % Temperature
-        F1_PVT(i,j,3) = data.F1pac(2,TIME_STEP);  % Vibrations
+        F1_PVT(i,j,2) = data.F1pac(2,TIME_STEP);  % Vibrations
+        F1_PVT(i,j,3) = data.F1tdc(1,TIME_STEP);  % Temperature
     end
 end
 
@@ -268,20 +268,20 @@ spongefoam_pt = zeros(20,2);
 spongefoam_tv = zeros(20,2);
 class_set = zeros(20,1);
 
-spongefoam_pv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, [1,3]);
-spongefoam_pv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, [1,3]);
+spongefoam_pv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, [1,2]);
+spongefoam_pv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, [1,2]);
 
 %spongefoam_pv = normalize(spongefoam_pv,'center','mean');
 %spongefoam_pv = normalize(spongefoam_pv);
 
 % Standardise data by subtracting mean and dividing by standard deviation
 
-spongefoam_pt(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, 1:2);
-spongefoam_pt(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, 1:2);
+spongefoam_pt(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, [1,3]);
+spongefoam_pt(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, [1,3]);
 
 
-spongefoam_tv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, 2:3);
-spongefoam_tv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, 2:3);
+spongefoam_tv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, [3,2]);
+spongefoam_tv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, [3,2]);
 
 
 class_set(1:10) = 1;
