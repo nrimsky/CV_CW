@@ -97,6 +97,8 @@ end
 
 save("F1_ELECTRODES.mat", "F1_ELECTRODES");
 
+%% 
+
 % 3. Create a 3D scatter plot of the complete contents of the PVT mat file, with the axis as Pressure,
 % Vibration and Temperature, with different colours used for different objects. Use the same
 % colours for the objects throughout this work.
@@ -255,12 +257,124 @@ hold(ax, "off");
 
 % 1. We want to see if we can discriminate two deformable and porous objects by touch: the black
 % foam and the car sponge.
+
+black_foam = 4;
+car_sponge = 5;
+
+% need to create matrices of: 2 x 20 first 10 is pressure and vibration of
+% trials of black foam and second 10 is pressure and vibrations of trials of car sponge
+spongefoam_pv = zeros(20,2);
+spongefoam_pt = zeros(20,2);
+spongefoam_tv = zeros(20,2);
+class_set = zeros(20,1);
+
+spongefoam_pv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, [1,3]);
+spongefoam_pv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, [1,3]);
+
+%spongefoam_pv = normalize(spongefoam_pv,'center','mean');
+%spongefoam_pv = normalize(spongefoam_pv);
+
+% Standardise data by subtracting mean and dividing by standard deviation
+
+spongefoam_pt(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, 1:2);
+spongefoam_pt(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, 1:2);
+
+
+spongefoam_tv(1:10,:) = pvt_3d_points_normalised_reshaped(car_sponge, :, 2:3);
+spongefoam_tv(11:20,:) = pvt_3d_points_normalised_reshaped(black_foam, :, 2:3);
+
+
+class_set(1:10) = 1;
+class_set(11:20) = 2;
+
 % a. Use LDA to split the training data in terms of Pressure vs. Vibration, Pressure vs.
 % Temperature and Temperature vs. Vibration. Plot the results, including a line showing
 % the generated LDA function.
+
+[recon, weight] = LDA_Mat(spongefoam_pv, class_set);
+
+spongefoam_pt = normalize(spongefoam_pt);
+
+figure(13)
+hold on
+scatter(spongefoam_pv(1:10,1),spongefoam_pv(1:10,2), "o", COLOURS(car_sponge), "filled")
+scatter(spongefoam_pv(11:20,1),spongefoam_pv(11:20,2), "o", COLOURS(black_foam), "filled")
+plot([-1*weight(1,1), weight(1,1)],[-1*weight(2,1), weight(2,1)])
+xlabel("Pressure");
+ylabel("Vibration");
+hold off
+legend("Car Sponge", "Black Foam", "LD 1")
+ylim([-2 2])
+
+%[weight] = LDA(spongefoam_pt, class_set);
+
+[recon, weight] = LDA_Mat(spongefoam_pt, class_set);
+
+spongefoam_pt = normalize(spongefoam_pt);
+
+figure(14)
+hold on
+scatter(spongefoam_pt(1:10,1),spongefoam_pt(1:10,2), "o", COLOURS(car_sponge), "filled")
+scatter(spongefoam_pt(11:20,1),spongefoam_pt(11:20,2), "o", COLOURS(black_foam), "filled")
+plot([-1*weight(1,1), weight(1,1)],[-1*weight(2,1), weight(2,1)])
+xlabel("Pressure");
+ylabel("Temperature");
+legend("Car Sponge", "Black Foam", "LD 1")
+hold off
+
+%[weight] = LDA(spongefoam_tv, class_set);
+
+[recon, weight] = LDA_Mat(spongefoam_tv, class_set);
+
+spongefoam_tv = normalize(spongefoam_tv);
+
+figure(15)
+hold on
+scatter(spongefoam_tv(1:10,1),spongefoam_tv(1:10,2), "o", COLOURS(car_sponge), "filled")
+scatter(spongefoam_tv(11:20,1),spongefoam_tv(11:20,2), "o", COLOURS(black_foam), "filled")
+plot([-1*weight(1,1), weight(1,1)],[-1*weight(2,1), weight(2,1)])
+xlabel("Temperature");
+ylabel("Vibration");
+hold off
+legend("Car Sponge", "Black Foam", "LD 1")
+ylim([-1 1])
+
+
 % b. Now apply LDA to the three-dimensional PVT data.
+
+
+spongefoam_3d(1:10, :) = F1_PVT(car_sponge, :, :);
+spongefoam_3d(11:20, :) = F1_PVT(black_foam, :, :);
+
+%[recon, weight, l] = LDA(spongefoam_3d, class_set);
+
+% spongefoam_3d = normalize(spongefoam_3d,'center','mean');
+% spongefoam_3d = normalize(spongefoam_3d);
+
+spongefoam_3d = zscore(spongefoam_3d);
+
+[recon, weight] = LDA_Mat(spongefoam_3d, class_set);
+
+lda_lines = zeros(2,3,3);
+lda_lines(2, :, :) = weight;
+
+figure(16);
+scatter3(spongefoam_3d(1:10, 1), spongefoam_3d(1:10, 3), spongefoam_3d(1:10, 2), "o", COLOURS(car_sponge), "filled");
+hold on
+scatter3(spongefoam_3d(11:20, 1), spongefoam_3d(11:20, 3), spongefoam_3d(11:20, 2), "o", COLOURS(black_foam), "filled");
+plot3(lda_lines(:,1:2, 1), lda_lines(:,1:2, 2), lda_lines(:,1:2, 3));
+ylim([-1 1])
+
+figure(17)
+hold on
+scatter(recon(1:10,1), zeros(size(recon(1:10,1))), "o", COLOURS(car_sponge), "filled")
+scatter(recon(11:20,1), zeros(size(recon(1:10,1))),"o", COLOURS(black_foam), "filled")
+
+%recon(1:10,2),
+
 % c. Comment on the different outcomes. Consider the physical properties of the objects
 % in your answer and how these may have affected the sensor readings.
+
 % d. Repeat the LDA analysis with your own choice of two objects. Explain why you have
 % selected those objects for analysis. In other words – what were you trying to test and
 % what did you determine?
@@ -484,4 +598,40 @@ function acc = clustering_accuracy(idx)
     acc5 = sum(idx == l5) / 60;
     acc6 = sum(idx == l6) / 60;
     acc = max([acc1, acc2, acc3, acc4, acc5, acc6]);
+end
+
+function [Y, W, lambda] = LDA(X, L)
+    Classes=unique(L)';
+    k=numel(Classes);
+    n=zeros(k,1);
+    C=cell(k,1);
+    M=mean(X);
+    S=cell(k,1);
+    Sw=0;
+    Sb=0;
+    for j=1:k
+        Xj=X(L==Classes(j),:);
+        n(j)=size(Xj,1);
+        C{j}=mean(Xj);
+        S{j}=0;
+        for i=1:n(j)
+            S{j}=S{j}+(Xj(i,:)-C{j})'*(Xj(i,:)-C{j});
+        end
+        Sw=Sw+S{j};
+        Sb=Sb+n(j)*(C{j}-M)'*(C{j}-M);
+    end
+    [W, LAMBDA]=eig(Sb,Sw);
+    lambda=diag(LAMBDA);
+    [lambda, SortOrder]=sort(lambda,'descend');
+    W=W(:,SortOrder);
+    Y=X*W;
+end
+
+function [Y, W] = LDA_Mat(X, L)
+    Mdl = fitcdiscr(X, L);
+    [W, LAMBDA] = eig(Mdl.BetweenSigma, Mdl.Sigma);
+    lambda = diag(LAMBDA);
+    [lambda, SortOrder] = sort(lambda, 'descend');
+    W = W(:, SortOrder);
+    Y = X*W;
 end
