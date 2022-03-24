@@ -169,11 +169,11 @@ plot3(ax, lines(:,:, 1), lines(:,:, 2), lines(:,:, 3), "linewidth", 2);
 xlabel(ax, "Pressure");
 ylabel(ax, "Vibration");
 zlabel(ax, "Temperature");
-title(ax, "Standardised PVT Scatter Plot with principle components");
+title(ax, "Standardised PVT Scatter Plot with principal components");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic", "PC1", "PC2", "PC3");
 hold(ax, "off");
 
-% Project data onto principle components
+% Project data onto principal components
 projected = pvt_3d_points_normalised * pca_coeff;
 
 % Show scatter plot of data projected onto top 2 PC's
@@ -187,7 +187,7 @@ for i = 1:6
 end
 xlabel(ax, "PC1");
 ylabel(ax, "PC2");
-title(ax, "Scatter Plot of PVT data projected down with 2 principle components");
+title(ax, "Scatter Plot of PVT data projected down with 2 principal components");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam");
 hold(ax, "off");
 
@@ -233,7 +233,7 @@ fig = figure(11);
 ax = subplot(1, 1, 1, "Parent", fig);
 plot(ax, 1:size(eigs), eigs, '-o');
 title(ax, "Scree plot");
-xlabel(ax, "Principle component");
+xlabel(ax, "principal component");
 ylabel(ax, "Variance");
 xticks(ax, 1:size(eigs));
 
@@ -248,7 +248,7 @@ end
 xlabel(ax, "PC 1");
 ylabel(ax, "PC 2");
 zlabel(ax, "PC 3");
-title(ax, "Electrode data projected onto top 3 principle components");
+title(ax, "Electrode data projected onto top 3 principal components");
 legend(ax, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
 hold(ax, "off");
 
